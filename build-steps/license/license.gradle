@@ -86,24 +86,27 @@ task updateLicenses {
     }
 }
 
-releaseProjects*.with {
-    def installer = install.repositories.mavenInstaller
-    def deployer = uploadArchives.repositories.mavenDeployer
 
-    [installer, deployer]*.pom*.whenConfigured {
-        project {
-            licenses {
-                license {
-                    name app.license.name
-                    url app.license.url
-                    distribution 'repo'
-                }
-                if (repackagesAsm) {
-                    def asmLicense = rootProject.file(asmLicenseFile).readLines() as Queue
-                    license {
-                        name asmLicense.poll().replaceAll(/^.*?: /, '')
-                        url asmLicense.poll().replaceAll(/^.*?: /, '')
-                        distribution 'repo'
+releaseProjects*.with {
+    ext.repackagesAsm = project.name == "archunit"
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                pom {
+                    licenses {
+                        license {
+                            name = app.license.name
+                            url = app.license.url
+                            distribution = 'repo'
+                        }
+                        if (repackagesAsm) {
+                            def asmLicense = rootProject.file(asmLicenseFile).readLines() as Queue
+                            license {
+                                name = asmLicense.poll().replaceAll(/^.*?: /, '')
+                                url = asmLicense.poll().replaceAll(/^.*?: /, '')
+                                distribution = 'repo'
+                            }
+                        }
                     }
                 }
             }
